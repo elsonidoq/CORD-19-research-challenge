@@ -27,12 +27,12 @@ def intersects(i1, i2):
 def get_snippets(papers, tokens):
     seeds_pat = '|'.join(tokens)
     pat = re.compile(f'(?P<p>\W|^)(?P<w>{seeds_pat})(?P<n>\W|$)', re.I)
-
-    tokens = set(tokens)
+    
+    s_tokens = set(tokens)
     res = []
     for pid, paper in enumerate(tqdm(papers)):
         for field, value in data.iter_fields(paper, flat=True):
-            if len(tokens.intersection(value['tokens'])) == 0: continue
+            if len(s_tokens.intersection(value['tokens'])) == 0: continue
             if len(value['tokens']) < 10: continue
 
             text = value['text']
@@ -40,8 +40,10 @@ def get_snippets(papers, tokens):
             ws = []
             snippet = pat.sub('\g<p>**\g<w>**\g<n>', text)
             for match in pat.finditer(text):
-                n += 1
-                ws.append(match.groupdict()['w'].lower())
+                w = match.groupdict()['w'].lower()
+                n += tokens[w]
+                ws.append(w)
+                
             res.append({
                 'n': n,
                 'pid': pid,
