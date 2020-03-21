@@ -15,15 +15,18 @@ def get_context_stats(papers, window_size=50):
     for paper in tqdm(papers):
         for paragraphs in paper.values():
             tokens = list(chain(*[e['tokens'] for e in paragraphs]))
-
-            for i, t in enumerate(tokens):
+            if bigrams:
+                btokens = [f'{p}_{n}' for p, n in zip(tokens[:-1], tokens[1:])]
+            else:
+                btokens = []
+            for i, t in chain(enumerate(tokens), enumerate(btokens)):
                 if t not in unigrams: unigrams[t] = 0
-
+                    
                 unigrams[t] += 1
 
                 lb = max(0, i - window_size)
                 ub = min(len(tokens) - 1, i + window_size)
-
+                
                 if t not in bigrams: bigrams[t] = {}
                 t_bigrams = bigrams[t]
                 for j in range(lb, ub):
